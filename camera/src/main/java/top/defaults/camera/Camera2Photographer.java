@@ -413,9 +413,12 @@ public class Camera2Photographer implements InternalPhotographer {
                         imageSize = imageSizeMap.defaultSize();
                     }
                 }
+                //  size = imageSize;
+
                 imageReader = ImageReader.newInstance(imageSize.getWidth(), imageSize.getHeight(),
                         ImageFormat.JPEG, 2);
                 imageReader.setOnImageAvailableListener(onImageAvailableListener, null);
+
                 if (videoSize == null) {
                     // determine video size
                     SortedSet<Size> sizesWithAspectRatio = videoSizeMap.sizes(aspectRatio);
@@ -657,8 +660,8 @@ public class Camera2Photographer implements InternalPhotographer {
 
     private void refineSizes() {
         for (AspectRatio ratio : previewSizeMap.ratios()) {
-            if ((mode == Values.MODE_VIDEO && !videoSizeMap.ratios().contains(ratio))
-                    || (mode == Values.MODE_IMAGE && !imageSizeMap.ratios().contains(ratio))) {
+            if (((mode == Values.MODE_VIDEO || mode == Values.MODE_IMAGE_AND_VIDEO) && !videoSizeMap.ratios().contains(ratio))
+                    || ((mode == Values.MODE_VIDEO || mode == Values.MODE_IMAGE_AND_VIDEO) && !imageSizeMap.ratios().contains(ratio))) {
                 if (previewSizeMap.sizes(ratio) != null) {
                     supportedPreviewSizes.removeAll(previewSizeMap.sizes(ratio));
                 }
@@ -727,7 +730,7 @@ public class Camera2Photographer implements InternalPhotographer {
     }
 
     private void closePreviewSession() {
-        if (captureSession != null) {
+        if (captureSession != null && mode != Values.MODE_IMAGE_AND_VIDEO) {
             captureSession.close();
             captureSession = null;
         }
@@ -746,7 +749,7 @@ public class Camera2Photographer implements InternalPhotographer {
 
             List<Surface> surfaces = new ArrayList<>();
             surfaces.add(previewSurface);
-            if (mode == Values.MODE_IMAGE) {
+            if (mode == Values.MODE_IMAGE || mode == Values.MODE_IMAGE_AND_VIDEO) {
                 surfaces.add(imageReader.getSurface());
             }
             camera.createCaptureSession(surfaces, sessionCallback, null);
@@ -772,6 +775,8 @@ public class Camera2Photographer implements InternalPhotographer {
                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             } else {
+                previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO);
             }
@@ -852,6 +857,7 @@ public class Camera2Photographer implements InternalPhotographer {
             // Set up Surface for the MediaRecorder
             Surface recorderSurface = mediaRecorder.getSurface();
             surfaces.add(recorderSurface);
+            surfaces.add(imageReader.getSurface());
             previewRequestBuilder.addTarget(recorderSurface);
             // Start a capture session
             // Once the session starts, we can update the UI and start recording
@@ -976,9 +982,6 @@ public class Camera2Photographer implements InternalPhotographer {
                             CaptureRequest.FLASH_MODE_TORCH);
                     break;
                 case Values.FLASH_AUTO:
-                    captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                            CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                    break;
                 case Values.FLASH_RED_EYE:
                     captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                             CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
@@ -987,7 +990,9 @@ public class Camera2Photographer implements InternalPhotographer {
             captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION,
                     Utils.getOrientation(sensorOrientation, currentDeviceRotation));
             captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, calculateZoomRect());
-            captureSession.stopRepeating();
+            if (!isRecordingVideo)
+                captureSession.stopRepeating();
+
             captureSession.capture(captureRequestBuilder.build(),
                     new CameraCaptureSession.CaptureCallback() {
                         @Override
@@ -1100,12 +1105,21 @@ public class Camera2Photographer implements InternalPhotographer {
             return;
         }
         try {
-            if (mode == Values.MODE_IMAGE) {
-                captureSession.setRepeatingRequest(previewRequestBuilder.build(), imageCaptureCallback, null);
-            } else {
-                previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-                captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null);
+            switch (mode) {
+                case Values.MODE_IMAGE:
+                    captureSession.setRepeatingRequest(previewRequestBuilder.build(), imageCaptureCallback, null);
+                    break;
+                case Values.MODE_VIDEO:
+                    previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+                    captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null);
+                    break;
+                case Values.MODE_IMAGE_AND_VIDEO:
+                    previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+                    captureSession.setRepeatingRequest(previewRequestBuilder.build(), imageCaptureCallback, null);
+                    break;
+
             }
+
         } catch (CameraAccessException e) {
             if (exceptionCallback != null) {
                 exceptionCallback.run();

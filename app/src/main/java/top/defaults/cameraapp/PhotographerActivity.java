@@ -141,8 +141,12 @@ public class PhotographerActivity extends AppCompatActivity {
                     SizeItem sizeItem = dialog.getSelectedItem(SizeItem.class);
                     if (mode == Values.MODE_VIDEO) {
                         photographer.setVideoSize(sizeItem.get());
-                    } else {
+                    } else if (mode == Values.MODE_IMAGE) {
                         photographer.setImageSize(sizeItem.get());
+                    } else if (mode == Values.MODE_IMAGE_AND_VIDEO) {
+                        photographer.setImageSize(sizeItem.get());
+                        photographer.setVideoSize(sizeItem.get());
+
                     }
                 }
             });
