@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,18 +45,29 @@ public class PhotographerActivity extends AppCompatActivity {
     PhotographerHelper photographerHelper;
     private boolean isRecordingVideo;
 
-    @BindView(R.id.preview) CameraView preview;
-    @BindView(R.id.status) TextView statusTextView;
+    @BindView(R.id.preview)
+    CameraView preview;
+    @BindView(R.id.status)
+    TextView statusTextView;
 
-    @BindView(R.id.chooseSize) TextButton chooseSizeButton;
-    @BindView(R.id.flash) TextButton flashTextButton;
-    @BindView(R.id.flash_torch) ImageButton flashTorch;
+    @BindView(R.id.chooseSize)
+    TextButton chooseSizeButton;
+    @BindView(R.id.flash)
+    TextButton flashTextButton;
+    @BindView(R.id.flash_torch)
+    ImageButton flashTorch;
 
-    @BindView(R.id.switch_mode) TextButton switchButton;
-    @BindView(R.id.action) ImageButton actionButton;
-    @BindView(R.id.flip) ImageButton flipButton;
+    @BindView(R.id.switch_mode)
+    TextButton switchButton;
+    @BindView(R.id.action)
+    ImageButton actionButton;
+    @BindView(R.id.flip)
+    ImageButton flipButton;
+    @BindView(R.id.takePhoto)
+    Button btnTakePhoto;
 
-    @BindView(R.id.zoomValue) TextView zoomValueTextView;
+    @BindView(R.id.zoomValue)
+    TextView zoomValueTextView;
 
     private int currentFlash = Values.FLASH_AUTO;
 
@@ -83,7 +95,8 @@ public class PhotographerActivity extends AppCompatActivity {
         if (supportedAspectRatios != null) {
             SimplePickerDialog<AspectRatioItem> dialog = SimplePickerDialog.create(new PickerDialog.ActionListener<AspectRatioItem>() {
                 @Override
-                public void onCancelClick(PickerDialog<AspectRatioItem> dialog) { }
+                public void onCancelClick(PickerDialog<AspectRatioItem> dialog) {
+                }
 
                 @Override
                 public void onDoneClick(PickerDialog<AspectRatioItem> dialog) {
@@ -102,7 +115,7 @@ public class PhotographerActivity extends AppCompatActivity {
         Size selectedSize = null;
         List<SizeItem> supportedSizes = null;
         int mode = photographer.getMode();
-        if (mode == Values.MODE_VIDEO) {
+        if (mode == Values.MODE_VIDEO || mode == Values.MODE_IMAGE_AND_VIDEO) {
             Set<Size> videoSizes = photographer.getSupportedVideoSizes();
             selectedSize = photographer.getVideoSize();
             if (videoSizes != null && videoSizes.size() > 0) {
@@ -116,10 +129,12 @@ public class PhotographerActivity extends AppCompatActivity {
             }
         }
 
+
         if (supportedSizes != null) {
             SimplePickerDialog<SizeItem> dialog = SimplePickerDialog.create(new PickerDialog.ActionListener<SizeItem>() {
                 @Override
-                public void onCancelClick(PickerDialog<SizeItem> dialog) { }
+                public void onCancelClick(PickerDialog<SizeItem> dialog) {
+                }
 
                 @Override
                 public void onDoneClick(PickerDialog<SizeItem> dialog) {
@@ -157,8 +172,7 @@ public class PhotographerActivity extends AppCompatActivity {
 
     @OnClick(R.id.action)
     void action() {
-        int mode = photographer.getMode();
-        if (mode == Values.MODE_VIDEO) {
+        if (photographer.getMode() != Values.MODE_IMAGE)
             if (isRecordingVideo) {
                 finishRecordingIfNeeded();
             } else {
@@ -166,9 +180,6 @@ public class PhotographerActivity extends AppCompatActivity {
                 photographer.startRecording(null);
                 actionButton.setEnabled(false);
             }
-        } else if (mode == Values.MODE_IMAGE) {
-            photographer.takePicture();
-        }
     }
 
     @OnClick(R.id.flash_torch)
@@ -211,7 +222,7 @@ public class PhotographerActivity extends AppCompatActivity {
                 focusPaint.setStyle(Paint.Style.STROKE);
                 focusPaint.setStrokeWidth(2);
                 focusPaint.setColor(Color.WHITE);
-                return new Paint[]{ focusPaint };
+                return new Paint[]{focusPaint};
             }
 
             @Override
@@ -244,7 +255,7 @@ public class PhotographerActivity extends AppCompatActivity {
         photographer.setOnEventListener(new SimpleOnEventListener() {
             @Override
             public void onDeviceConfigured() {
-                if (photographer.getMode() == Values.MODE_VIDEO) {
+                /*if (photographer.getMode() == Values.MODE_VIDEO) {
                     actionButton.setImageResource(R.drawable.record);
                     chooseSizeButton.setText(R.string.video_size);
                     switchButton.setText(R.string.video_mode);
@@ -252,7 +263,7 @@ public class PhotographerActivity extends AppCompatActivity {
                     actionButton.setImageResource(R.drawable.ic_camera);
                     chooseSizeButton.setText(R.string.image_size);
                     switchButton.setText(R.string.image_mode);
-                }
+                }*/
             }
 
             @Override
@@ -283,6 +294,9 @@ public class PhotographerActivity extends AppCompatActivity {
             public void onError(Error error) {
                 Timber.e("Error happens: %s", error.getMessage());
             }
+        });
+        btnTakePhoto.setOnClickListener(v -> {
+            photographer.takePicture();
         });
     }
 

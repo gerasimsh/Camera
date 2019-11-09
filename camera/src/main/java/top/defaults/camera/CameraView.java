@@ -55,7 +55,7 @@ public class CameraView extends RelativeLayout {
         autoFocus = typedArray.getBoolean(R.styleable.CameraView_autoFocus, true);
         facing = typedArray.getInt(R.styleable.CameraView_facing, Values.FACING_BACK);
         flash = typedArray.getInt(R.styleable.CameraView_flash, Values.FLASH_OFF);
-        mode = typedArray.getInt(R.styleable.CameraView_mode, Values.MODE_IMAGE);
+        mode = typedArray.getInt(R.styleable.CameraView_mode, Values.MODE_IMAGE_AND_VIDEO);
         boolean fillSpace = typedArray.getBoolean(R.styleable.CameraView_fillSpace, false);
         textureView.setFillSpace(fillSpace);
         pinchToZoom = typedArray.getBoolean(R.styleable.CameraView_pinchToZoom, true);

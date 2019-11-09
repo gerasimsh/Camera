@@ -7,6 +7,7 @@ public interface Values {
 
     int MODE_IMAGE = 0;
     int MODE_VIDEO = 1;
+    int MODE_IMAGE_AND_VIDEO = 2;
 
     int FLASH_OFF = 0;
     int FLASH_ON = 1;

@@ -59,7 +59,7 @@ public class Camera2Photographer implements InternalPhotographer {
     private boolean isInitialized;
     private boolean isPreviewStarted;
 
-    private int mode = Values.MODE_IMAGE;
+    private int mode = Values.MODE_IMAGE_AND_VIDEO;
     private AspectRatio aspectRatio = Values.DEFAULT_ASPECT_RATIO;
     private boolean autoFocus = true;
     private int facing = Values.FACING_BACK;
@@ -240,7 +240,8 @@ public class Camera2Photographer implements InternalPhotographer {
 
             private boolean shouldChange(int orientation) {
                 if (currentDeviceRotation == -1) return true;
-                if (currentDeviceRotation == 0) return orientation >= 45 + changeSlop && orientation < 315 - changeSlop;
+                if (currentDeviceRotation == 0)
+                    return orientation >= 45 + changeSlop && orientation < 315 - changeSlop;
                 int upLimit = currentDeviceRotation + 45 + changeSlop;
                 int downLimit = currentDeviceRotation - 45 - changeSlop;
                 return !(orientation >= downLimit && orientation < upLimit);
@@ -274,7 +275,7 @@ public class Camera2Photographer implements InternalPhotographer {
     @Override
     public void startPreview() {
         throwIfNotInitialized();
-        for (String permission: RECORD_VIDEO_PERMISSIONS) {
+        for (String permission : RECORD_VIDEO_PERMISSIONS) {
             int permissionCheck = ContextCompat.checkSelfPermission(activityContext, permission);
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
                 callbackHandler.onError(new Error(Error.ERROR_PERMISSION, "Unsatisfied permission: " + permission));
@@ -385,36 +386,66 @@ public class Camera2Photographer implements InternalPhotographer {
     }
 
     private void prepareWorkers() {
-        Size size;
-        if (mode == Values.MODE_IMAGE) {
-            if (imageSize == null) {
-                // determine image size
-                SortedSet<Size> sizesWithAspectRatio = imageSizeMap.sizes(aspectRatio);
-                if (sizesWithAspectRatio != null && sizesWithAspectRatio.size() > 0) {
-                    imageSize = sizesWithAspectRatio.last();
-                } else {
-                    imageSize = imageSizeMap.defaultSize();
+        Size size = null;
+        switch (mode) {
+            case Values.MODE_IMAGE:
+                if (imageSize == null) {
+                    // determine image size
+                    SortedSet<Size> sizesWithAspectRatio = imageSizeMap.sizes(aspectRatio);
+                    if (sizesWithAspectRatio != null && sizesWithAspectRatio.size() > 0) {
+                        imageSize = sizesWithAspectRatio.last();
+                    } else {
+                        imageSize = imageSizeMap.defaultSize();
+                    }
                 }
-            }
-            size = imageSize;
-            imageReader = ImageReader.newInstance(imageSize.getWidth(), imageSize.getHeight(),
-                    ImageFormat.JPEG,2);
-            imageReader.setOnImageAvailableListener(onImageAvailableListener, null);
-        } else if (mode == Values.MODE_VIDEO) {
-            if (videoSize == null) {
-                // determine video size
-                SortedSet<Size> sizesWithAspectRatio = videoSizeMap.sizes(aspectRatio);
-                if (sizesWithAspectRatio != null && sizesWithAspectRatio.size() > 0) {
-                    videoSize = sizesWithAspectRatio.last();
-                } else {
-                    videoSize = chooseVideoSize(supportedVideoSizes);
+                size = imageSize;
+                imageReader = ImageReader.newInstance(imageSize.getWidth(), imageSize.getHeight(),
+                        ImageFormat.JPEG, 2);
+                imageReader.setOnImageAvailableListener(onImageAvailableListener, null);
+                break;
+            case Values.MODE_IMAGE_AND_VIDEO:
+                if (imageSize == null) {
+                    // determine image size
+                    SortedSet<Size> sizesWithAspectRatio = imageSizeMap.sizes(aspectRatio);
+                    if (sizesWithAspectRatio != null && sizesWithAspectRatio.size() > 0) {
+                        imageSize = sizesWithAspectRatio.last();
+                    } else {
+                        imageSize = imageSizeMap.defaultSize();
+                    }
                 }
-            }
-            size = videoSize;
-            mediaRecorder = new MediaRecorder();
-        } else {
-            throw new RuntimeException("Wrong mode value: " + mode);
+                imageReader = ImageReader.newInstance(imageSize.getWidth(), imageSize.getHeight(),
+                        ImageFormat.JPEG, 2);
+                imageReader.setOnImageAvailableListener(onImageAvailableListener, null);
+                if (videoSize == null) {
+                    // determine video size
+                    SortedSet<Size> sizesWithAspectRatio = videoSizeMap.sizes(aspectRatio);
+                    if (sizesWithAspectRatio != null && sizesWithAspectRatio.size() > 0) {
+                        videoSize = sizesWithAspectRatio.last();
+                    } else {
+                        videoSize = chooseVideoSize(supportedVideoSizes);
+                    }
+                }
+                size = videoSize;
+                mediaRecorder = new MediaRecorder();
+                break;
+            case Values.MODE_VIDEO:
+                if (videoSize == null) {
+                    // determine video size
+                    SortedSet<Size> sizesWithAspectRatio = videoSizeMap.sizes(aspectRatio);
+                    if (sizesWithAspectRatio != null && sizesWithAspectRatio.size() > 0) {
+                        videoSize = sizesWithAspectRatio.last();
+                    } else {
+                        videoSize = chooseVideoSize(supportedVideoSizes);
+                    }
+                }
+                size = videoSize;
+                mediaRecorder = new MediaRecorder();
+                break;
+            default:
+                throw new RuntimeException("Wrong mode value: " + mode);
         }
+
+        assert size != null;
         previewSize = chooseOptimalPreviewSize(size);
 
         int orientation = activityContext.getResources().getConfiguration().orientation;
@@ -648,7 +679,7 @@ public class Camera2Photographer implements InternalPhotographer {
                 chosen = size;
             }
         }
-        if (chosen!= null) return chosen;
+        if (chosen != null) return chosen;
         return choices.last();
     }
 
@@ -774,7 +805,7 @@ public class Camera2Photographer implements InternalPhotographer {
 
     @Override
     public void takePicture() {
-        if (mode != Values.MODE_IMAGE) {
+        if (mode != Values.MODE_IMAGE && mode != Values.MODE_IMAGE_AND_VIDEO) {
             callbackHandler.onError(new Error(Error.ERROR_INVALID_PARAM, "Cannot takePicture() in non-IMAGE mode"));
             return;
         }
@@ -796,7 +827,7 @@ public class Camera2Photographer implements InternalPhotographer {
     @Override
     public void startRecording(MediaRecorderConfigurator configurator) {
         throwIfNoMediaRecorder();
-        if (camera == null || !textureView.isAvailable() || previewSize == null) {
+        if ((camera == null || !textureView.isAvailable() || previewSize == null) && mode != Values.MODE_IMAGE_AND_VIDEO) {
             callbackHandler.onError(new Error(Error.ERROR_CAMERA));
             return;
         }
@@ -873,6 +904,7 @@ public class Camera2Photographer implements InternalPhotographer {
     public void pauseRecording() {
         throwIfNoMediaRecorder();
         if (!isRecordingVideo) return;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mediaRecorder.pause();
         } else {
@@ -1058,7 +1090,7 @@ public class Camera2Photographer implements InternalPhotographer {
         if (Utils.checkFloatEqual(zoom, 1.f) || zoom < 1.f) return origin;
 
         int xOffset = (int) (((1 - 1 / zoom) / 2) * (origin.right - origin.left));
-        int yOffset = (int) (((1 - 1 / zoom ) / 2) * (origin.bottom - origin.top));
+        int yOffset = (int) (((1 - 1 / zoom) / 2) * (origin.bottom - origin.top));
 
         return new Rect(xOffset, yOffset, origin.right - xOffset, origin.bottom - yOffset);
     }

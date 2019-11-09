@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -12,57 +11,57 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        app:mode="video"
         app:aspectRatio="4:3"
         app:autoFocus="true"
         app:facing="back"
         app:fillSpace="false"
         app:flash="auto"
+        app:mode="multi"
         app:pinchToZoom="false"
-        app:showFocusIndicator="true"/>
+        app:showFocusIndicator="true" />
 
     <ImageButton
         android:id="@+id/flash_torch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="16dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:src="@drawable/light_off"
-        android:background="?android:selectableItemBackground"/>
+        android:background="?android:selectableItemBackground"
+        android:padding="16dp"
+        android:src="@drawable/light_off" />
 
     <TextView
         android:id="@+id/zoomValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
+        android:layout_margin="16dp"
         android:textColor="#ffffff"
-        android:textSize="14sp"/>
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:layout_above="@+id/actions_layout"
+        android:layout_margin="16dp"
         android:gravity="center_horizontal"
         android:text="@string/recording"
-        android:textSize="14sp"
         android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
         android:visibility="invisible"
-        tools:visibility="visible"/>
+        tools:visibility="visible" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+        android:layout_above="@+id/actions_layout"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/actions_layout"
-        android:padding="4dp"
-        android:background="#3fffffff">
+        android:background="#3fffffff"
+        android:orientation="vertical"
+        android:padding="4dp">
 
         <top.defaults.view.TextButton
             android:id="@+id/chooseRatio"
@@ -71,8 +70,8 @@
             android:padding="4dp"
             android:text="@string/ratio"
             android:textColor="@android:color/white"
-            app:underline="true"
-            app:textEffect="animateSize"/>
+            app:textEffect="animateSize"
+            app:underline="true" />
 
         <top.defaults.view.TextButton
             android:id="@+id/chooseSize"
@@ -81,35 +80,35 @@
             android:padding="4dp"
             android:text="@string/image_size"
             android:textColor="@android:color/white"
-            app:underline="true"
-            app:textEffect="animateSize"/>
+            app:textEffect="animateSize"
+            app:underline="true" />
 
         <CheckBox
             android:id="@+id/fillSpace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:buttonTint="#ffffff"
             android:text="@string/fill"
-            android:textColor="#ffffff"
-            android:buttonTint="#ffffff"/>
+            android:textColor="#ffffff" />
 
         <CheckBox
             android:id="@+id/enableZoom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:buttonTint="#ffffff"
             android:text="@string/zoom"
-            android:textColor="#ffffff"
-            android:buttonTint="#ffffff"/>
+            android:textColor="#ffffff" />
 
         <top.defaults.view.TextButton
             android:id="@+id/flash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_flash_auto"
             android:padding="4dp"
             android:text="@string/flash_auto"
             android:textColor="@android:color/white"
-            android:drawableStart="@drawable/ic_flash_auto"
-            app:underline="true"
-            app:textEffect="animateColor"/>
+            app:textEffect="animateColor"
+            app:underline="true" />
     </LinearLayout>
 
     <RelativeLayout
@@ -125,27 +124,32 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:padding="16dp"
-            android:textColor="@android:color/white"
-            android:text="@string/video_mode" />
+            android:text="@string/video_mode"
+            android:textColor="@android:color/white" />
 
         <ImageButton
             android:id="@+id/action"
             android:layout_width="wrap_content"
             android:layout_height="64dp"
             android:layout_centerInParent="true"
-            android:padding="16dp"
-            android:background="?android:selectableItemBackground"/>
+            android:background="?android:selectableItemBackground"
+            android:padding="16dp" />
 
         <ImageButton
             android:id="@+id/flip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?android:selectableItemBackground"
             android:padding="16dp"
-            android:src="@drawable/ic_switch_camera"
-            android:background="?android:selectableItemBackground"/>
+            android:src="@drawable/ic_switch_camera" />
 
+        <Button
+            android:id="@+id/takePhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PHOTO" />
     </RelativeLayout>
 
 </RelativeLayout>
