@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MyCameraHelper.iml" filepath="$PROJECT_DIR$/MyCameraHelper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/MyCameraHelper-app.iml" filepath="$PROJECT_DIR$/app/MyCameraHelper-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/camera/MyCameraHelper-camera.iml" filepath="$PROJECT_DIR$/camera/MyCameraHelper-camera.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/camera/camera.iml" filepath="$PROJECT_DIR$/camera/camera.iml" />
     </modules>
