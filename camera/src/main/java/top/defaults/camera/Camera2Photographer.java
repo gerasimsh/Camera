@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -42,6 +43,7 @@ public class Camera2Photographer implements InternalPhotographer {
     // we don't use sizes larger than 2160p, since MediaRecorder
     // cannot handle such a high-resolution video.
     private static final int MAX_VIDEO_SIZE = 3840 * 2160;
+    private static final String TAG = "Camera2Photographer";
 
     private static final SparseIntArray INTERNAL_FACINGS = new SparseIntArray();
 
@@ -114,12 +116,15 @@ public class Camera2Photographer implements InternalPhotographer {
 
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
+            Log.d(TAG, "StateCallback onOpened");
             Camera2Photographer.this.camera = camera;
             startCaptureSession();
         }
 
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {
+            Log.d(TAG, "StateCallback onDisconnected");
+
             camera.close();
             Camera2Photographer.this.camera = null;
             callbackHandler.onPreviewStopped();
@@ -127,6 +132,7 @@ public class Camera2Photographer implements InternalPhotographer {
 
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {
+            Log.d(TAG, "StateCallback onError");
             stopPreview();
             callbackHandler.onError(new Error(Error.ERROR_CAMERA));
         }
@@ -730,7 +736,7 @@ public class Camera2Photographer implements InternalPhotographer {
     }
 
     private void closePreviewSession() {
-        if (captureSession != null && mode != Values.MODE_IMAGE_AND_VIDEO) {
+        if (captureSession != null /*&& mode != Values.MODE_IMAGE_AND_VIDEO*/) {
             captureSession.close();
             captureSession = null;
         }
@@ -850,13 +856,12 @@ public class Camera2Photographer implements InternalPhotographer {
             List<Surface> surfaces = new ArrayList<>();
 
             Surface previewSurface = textureView.getSurface();
-            surfaces.add(previewSurface);
-            previewRequestBuilder.addTarget(previewSurface);
-
             // Set up Surface for the MediaRecorder
             Surface recorderSurface = mediaRecorder.getSurface();
+            surfaces.add(previewSurface);
             surfaces.add(recorderSurface);
             surfaces.add(imageReader.getSurface());
+            previewRequestBuilder.addTarget(previewSurface);
             previewRequestBuilder.addTarget(recorderSurface);
             // Start a capture session
             // Once the session starts, we can update the UI and start recording
@@ -930,13 +935,18 @@ public class Camera2Photographer implements InternalPhotographer {
 
     @Override
     public void finishRecording() {
-        if (!isRecordingVideo) return;
-        throwIfNoMediaRecorder();
-        isRecordingVideo = false;
-        mediaRecorder.stop();
-        mediaRecorder.reset();
-        callbackHandler.onFinishRecording(nextVideoAbsolutePath);
-        startCaptureSession();
+        try {
+            if (!isRecordingVideo) return;
+            throwIfNoMediaRecorder();
+            isRecordingVideo = false;
+            mediaRecorder.stop();
+            mediaRecorder.reset();
+            callbackHandler.onFinishRecording(nextVideoAbsolutePath);
+            startCaptureSession();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

@@ -25,6 +25,8 @@ class FocusHandler {
         } catch (CameraAccessException e) {
             callback.onFinish(new Error(Error.ERROR_CAMERA, e));
             return;
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
         }
 
         // cancel any existing AF trigger (repeated touches, etc.)
