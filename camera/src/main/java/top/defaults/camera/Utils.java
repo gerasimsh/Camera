@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -149,7 +150,7 @@ public class Utils {
                 throw new IOException(Utils.exceptionMessage(Error.ERROR_STORAGE, "Unable to create folder"));
             }
         }
-        return dir.getAbsolutePath() + "/" + System.currentTimeMillis() + fileSuffix;
+        return dir.getAbsolutePath() + "/" + UUID.randomUUID().toString() + fileSuffix;
     }
 
     static boolean checkFloatEqual(float a, float b) {
