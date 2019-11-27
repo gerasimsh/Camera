@@ -22,16 +22,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name="top.defaults.cameraapp.MainActivity">
+
+        </activity>
+
+        <activity
+            android:name="top.defaults.cameraapp.PhotographerActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="top.defaults.cameraapp.PhotographerActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
